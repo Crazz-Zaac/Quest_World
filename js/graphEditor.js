@@ -16,44 +16,20 @@ class GraphEditor{
     //private method for mouse action
     #addEventListeners(){
         //this gives the location of mouse
-        this.canvas.addEventListener("mousedown", (evt) => {
-            const mouse = new Point(evt.offsetX, evt.offsetY);
-
-            //for adding point on right click
-            if(evt.button == 2){ //2 -> is for right click
-                if(this.selected){
-                    this.selected = null;
-                }else if(this.hovered){
-                    this.#removePoint(this.hovered);
-                }
-            }
-
-            // add point on clicking left button
-            if(evt.button == 0){ //0 -> is for left click
-
-                if(this.hovered){
-                    this.#select(this.hovered);
-                    //when a mouse is hovered to a point we
-                    //also want to enable dragging
-                    this.dragging = true;
-                    return;
-                }
-
-                //drawing point anywhere the mouse clicks
-                this.graph.addPoint(this.mouse);
-
-                //adding a segment between a new and previous points
-                this.#select(this.mouse);
-
-                //we want to assign the newly created point to
-                // mouse hover without actually moving over
-                this.hovered = this.mouse;
-            }
-        });
+        this.canvas.addEventListener("mousedown", this.#handleMouseDown.bind(this));
         
         //event listener for mouse move
-        this.canvas.addEventListener("mousemove", (evt) => {
-            this.mouse = new Point(evt.offsetX, evt.offsetY);
+        this.canvas.addEventListener("mousemove", this.#handleMouseMove.bind(this));
+
+        //disabling Default menu viewing that prevents from right click
+        this.canvas.addEventListener("contextmenu", (evt) => evt.preventDefault());
+
+        //when the mouse is released after dragging
+        this.canvas.addEventListener("mouseup", () => this.dragging = false);
+    }
+
+    #handleMouseMove(evt){
+        this.mouse = new Point(evt.offsetX, evt.offsetY);
 
             //get nearest point from all the graph points
             this.hovered = getNearestPoint(this.mouse, this.graph.points, 10);
@@ -62,14 +38,39 @@ class GraphEditor{
                 this.selected.x = this.mouse.x;
                 this.selected.y = this.mouse.y;
             }
-            
-        });
+    }
 
-        //disabling Default menu viewing that prevents from right click
-        this.canvas.addEventListener("contextmenu", (evt) => evt.preventDefault());
+    #handleMouseDown(evt){
+        //for adding point on right click
+        if(evt.button == 2){ //2 -> is for right click
+            if(this.selected){
+                this.selected = null;
+            }else if(this.hovered){
+                this.#removePoint(this.hovered);
+            }
+        }
 
-        //when the mouse is released after dragging
-        this.canvas.addEventListener("mouseup", () => this.dragging = false);
+        // add point on clicking left button
+        if(evt.button == 0){ //0 -> is for left click
+
+            if(this.hovered){
+                this.#select(this.hovered);
+                //when a mouse is hovered to a point we
+                //also want to enable dragging
+                this.dragging = true;
+                return;
+            }
+
+            //drawing point anywhere the mouse clicks
+            this.graph.addPoint(this.mouse);
+
+            //adding a segment between a new and previous points
+            this.#select(this.mouse);
+
+            //we want to assign the newly created point to
+            // mouse hover without actually moving over
+            this.hovered = this.mouse;
+        }
     }
 
     #select(point){
