@@ -8,6 +8,7 @@ class GraphEditor{
         this.selected = null;
         this.hovered = null;
         this.dragging = false;
+        this.mouse = null;
 
         this.#addEventListeners();
     }
@@ -22,6 +23,8 @@ class GraphEditor{
             if(evt.button == 2){ //2 -> is for right click
                 if(this.hovered){
                     this.#removePoint(this.hovered);
+                }else{ //if we are not hovering over anything else
+                    this.selected = null;
                 }
             }
 
@@ -29,35 +32,35 @@ class GraphEditor{
             if(evt.button == 0){ //0 -> is for left click
 
                 if(this.hovered){
-                    this.selected = this.hovered;
-
+                    this.#select(this.hovered);
                     //when a mouse is hovered to a point we
                     //also want to enable dragging
                     this.dragging = true;
-
                     return;
                 }
 
                 //drawing point anywhere the mouse clicks
-                this.graph.addPoint(mouse);
-                this.selected = mouse;
+                this.graph.addPoint(this.mouse);
+
+                //adding a segment between a new and previous points
+                this.#select(this.mouse);
 
                 //we want to assign the newly created point to
                 // mouse hover without actually moving over
-                this.hovered = mouse;
+                this.hovered = this.mouse;
             }
         });
         
         //event listener for mouse move
         this.canvas.addEventListener("mousemove", (evt) => {
-            const mouse = new Point(evt.offsetX, evt.offsetY);
+            this.mouse = new Point(evt.offsetX, evt.offsetY);
 
             //get nearest point from all the graph points
-            this.hovered = getNearestPoint(mouse, this.graph.points, 10);
+            this.hovered = getNearestPoint(this.mouse, this.graph.points, 10);
 
             if(this.dragging == true){
-                this.selected.x = mouse.x;
-                this.selected.y = mouse.y;
+                this.selected.x = this.mouse.x;
+                this.selected.y = this.mouse.y;
             }
             
         });
@@ -68,6 +71,16 @@ class GraphEditor{
         //when the mouse is released after dragging
         this.canvas.addEventListener("mouseup", () => this.dragging = false);
     }
+
+    #select(point){
+        //adding a segment between a new and previous points
+        if(this.selected){
+            this.graph.tryAddSegment(new Segment(this.selected, point));
+        }
+
+        this.selected = point;
+    }
+
 
     //this removes the selected point without a delay
     //it also resets tthe hovered and selected to null such that
@@ -90,6 +103,8 @@ class GraphEditor{
         }
 
         if (this.selected){
+            //drawing an imaginary segment
+            new Segment(this.selected, this.mouse).draw(this.ctx);
             this.selected.draw(this.ctx, { outline: true});
         }
 
