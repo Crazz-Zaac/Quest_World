@@ -21,10 +21,10 @@ class GraphEditor{
 
             //for adding point on right click
             if(evt.button == 2){ //2 -> is for right click
-                if(this.hovered){
-                    this.#removePoint(this.hovered);
-                }else{ //if we are not hovering over anything else
+                if(this.selected){
                     this.selected = null;
+                }else if(this.hovered){
+                    this.#removePoint(this.hovered);
                 }
             }
 
@@ -104,7 +104,9 @@ class GraphEditor{
 
         if (this.selected){
             //drawing an imaginary segment
-            new Segment(this.selected, this.mouse).draw(this.ctx);
+            const intent = this.hovered ? this.hovered : this.mouse;
+            //the intent with 3 dashed lines with 3 spaces in between
+            new Segment(this.selected, intent).draw(ctx, {dash: [3, 3] });
             this.selected.draw(this.ctx, { outline: true});
         }
 
