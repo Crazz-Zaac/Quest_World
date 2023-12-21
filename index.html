@@ -47,14 +47,25 @@
         const graph = new Graph([p1, p2, p3, p4], [s1, s2, s3, s4]);
         const viewport = new Viewport(myCanvas);
         //to dynamically change the graph editor
-        const graphEditor = new GraphEditor(myCanvas, graph);
+        const graphEditor = new GraphEditor(viewport, graph);
 
         animate();
 
         function animate(){
           // since it keeps redrawing
           ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
+          ctx.save(); //saving the state
+
+          //making sure the width and height of the canvas remains same
+          //we translate it to center
+          ctx.translate(viewport.center.x, viewport.center.y);
+
+          //scaling with the inverse of viewport
+          ctx.scale(1 / viewport.zoom, 1 / viewport.zoom);
+          const offset = viewport.getOffset();
+          ctx.translate(offset.x, offset.y);
           graphEditor.display(); //display itself
+          ctx.restore();
 
           //recursively keeps calling this function 60 times per second
           requestAnimationFrame(animate);
