@@ -18,12 +18,31 @@ class Viewport{
         
     }
 
-    getMouse(evt){
-        return new Point(
-            // moving the offse
+    reset(){
+        this.ctx.restore();
+          // since it keeps redrawing
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.save(); //saving the state
+
+          //making sure the width and height of the canvas remains same
+          //we translate it to center
+        this.ctx.translate(this.center.x, this.center.y);
+
+          //scaling with the inverse of viewport
+        this.ctx.scale(1 / this.zoom, 1 / this.zoom);
+        const offset = this.getOffset();
+        this.ctx.translate(offset.x, offset.y);
+    }
+
+    getMouse(evt, subtractDragOffset = false){
+        const p = new Point(
+            // moving the offset
             (evt.offsetX - this.center.x) * this.zoom - this.offset.x,
             (evt.offsetY - this.center.y) * this.zoom - this.offset.y
         );
+
+        //handling the movement with the mouse cursor
+        return subtractDragOffset ? subtract(p, this.drag.offset) : p;
     }
 
     getOffset(){
