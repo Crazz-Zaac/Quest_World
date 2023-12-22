@@ -31,7 +31,8 @@ class GraphEditor{
     }
 
     #handleMouseMove(evt){
-        this.mouse = this.viewport.getMouse(evt);
+        //we want mouse after subtracting the offset
+        this.mouse = this.viewport.getMouse(evt, true);
 
             //get nearest point from all the graph points
             this.hovered = getNearestPoint(this.mouse, this.graph.points, 10 * this.viewport.zoom);
@@ -96,6 +97,12 @@ class GraphEditor{
         if(this.selected == point){
             this.selected = null;
         }
+    }
+
+    dispose(){
+        this.graph.dispose();
+        this.selected = null;
+        this.hovered = null;
     }
     
     display(){
